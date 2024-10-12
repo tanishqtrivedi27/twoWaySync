@@ -14,6 +14,8 @@ producer = KafkaProducer(
     acks='all'
 )
 
+KAFKA_TOPIC = "customer_updates"
+
 def send_to_queue(topic, data):
     try:
         future = producer.send(topic, data.encode('utf-8'))

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.models import Customer
 from app.database import SessionLocal
-from app.kafka_queue import send_to_queue
+from app.kafka_queue import send_to_queue, KAFKA_TOPIC
 
 class CustomerCreate(BaseModel):
     name: str
@@ -28,6 +28,6 @@ def add_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_customer)
 
-    send_to_queue("customer_updates", f"{new_customer.id},{new_customer.name},{new_customer.email}")
+    send_to_queue(KAFKA_TOPIC, f"{new_customer.id},{new_customer.name},{new_customer.email}")
 
     return new_customer

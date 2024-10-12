@@ -1,4 +1,5 @@
 services:
+
   postgres:
     image: postgres
     container_name: postgres-twoWaySync
@@ -42,7 +43,6 @@ services:
       timeout: 5s
       retries: 5
 
-
   backend:
     build:
       context: ./app
@@ -61,6 +61,15 @@ services:
       context: ./outward
       dockerfile: Dockerfile
     container_name: worker-twoWaySync
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  inward-worker:
+    build:
+      context: ./inward
+      dockerfile: Dockerfile
+    container_name: inward-twoWaySync
     depends_on:
       kafka:
         condition: service_healthy
