@@ -18,8 +18,20 @@ Content-Type: application/json
 
 ## Project Structure
 
-1. app folder - contains fastapi application and has POST /customers route to add a new customer to local postgres instance and also sends this to a queue
+1. App folder - This component handles customer creation via a POST /customers endpoint. When a customer is created, it pushes an event to a kafka.
 
-2. outward folder - contains a worker script that subscribes to "customer_updates" topic of kafka and pushes changes to stripe
+2. Outward folder - This worker subscribes to "customer_updates" topic in kafka, processes the events, and updates the customer data in Stripe.
 
-3. inward folder - polls stripe api every 60 seconds to check for newly added customer, if the customer is not already there in our local postgres instance then adds them to postgres
+3. Inward folder - This component polls the Stripe API every 60 seconds to check for updates and syncs the data back to your local PostgreSQL database
+
+4. Currently the application only handles creations of new user but if we modify database schema to have last_updated_time and created_time, we can also handle updates and deletions
+
+
+## Salesforce integration:
+- Develop a new worker (consumer group) that also subscribes to "customer_updates" topic in kafka and manages data interactions with the Salesforce API. 
+- Batch Processing: Implement batch processing for handling multiple updates at once, reducing the number of API calls to Salesforce and improving efficiency.
+
+## Extension to Invoice catalog
+- Can create a new POST /invoice route to add invoice to our database
+- Will also need to create new topics, since Kafka has high throughput it will be scalable
+- Instead of modifying existing (customer catalog) workers, create separate invoice workers that can handle events. This maintains separation of responsibilities.
