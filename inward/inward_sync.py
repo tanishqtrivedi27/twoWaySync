@@ -2,8 +2,8 @@ import time
 import schedule
 import stripe
 import logging
-from datetime import datetime, timedelta
-from sqlalchemy import create_engine, Column, String
+from datetime import datetime, timedelta, timezone
+from sqlalchemy import create_engine, Column, String, Integer
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -15,14 +15,12 @@ Base = declarative_base()
 class Customer(Base):
     __tablename__ = 'customers'
 
-    id = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String, nullable=False)
     name = Column(String, nullable=False)
 
 Base.metadata.create_all(engine)
 
-
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -48,7 +46,7 @@ stripe.api_key = "sk_test_51Q8qNR03SnHpXEcqOqdTZpCnl1us65bFQ4EIwfY5xUXrnB5Oj73WV
 def fetch_stripe_updates():
     session = Session()
     try:
-        one_min_ago = int((datetime.utcnow() - timedelta(seconds=60)).timestamp())
+        one_min_ago = int((datetime.now(timezone.utc) - timedelta(seconds=60)).timestamp())
         updated_customers = stripe.Customer.list(created={'gte': one_min_ago})
 
         for stripe_customer in updated_customers.auto_paging_iter():
@@ -69,12 +67,7 @@ def fetch_stripe_updates():
             # send_to_kafka(KAFKA_TOPIC, customer_data)
             logger.info(f"Processed new customer: {stripe_customer.id}")
 
-            # Create new customer in local database
-            new_customer = Customer(
-                # id=stripe_customer.id,
-                email=stripe_customer.email,
-                name=stripe_customer.name
-            )
+            new_customer = Customer(name=stripe_customer.name, email=stripe_customer.email)
             session.add(new_customer)
 
         session.commit()

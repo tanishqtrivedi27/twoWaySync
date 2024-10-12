@@ -9,7 +9,7 @@ POST http://127.0.0.1:80/customers/
 Content-Type: application/json
 
 {
-  "name": "xyz",
-  "email": "xyz@mail.com"
+  "name": "t3",
+  "email": "t3@mail.com"
 }
 ###
