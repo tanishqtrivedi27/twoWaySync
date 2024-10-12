@@ -1,0 +1,6 @@
+fastapi[standard]
+psycopg2-binary
+stripe
+pydantic
+sqlalchemy
+kafka-python

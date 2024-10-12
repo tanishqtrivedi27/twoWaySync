@@ -3,8 +3,9 @@ services:
     image: postgres
     container_name: postgres-twoWaySync
     environment:
-      POSTGRES_USER: root
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
+      POSTGRES_DATABASE: mydb
     ports:
       - "5432:5432"
     healthcheck:
@@ -17,9 +18,34 @@ services:
       - postgres-data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  zookeeper:
+    image: zookeeper
+    container_name: zookeeper-twoWaySync
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: bitnami/kafka
+    container_name: kafka-twoWaySync
+    ports:
+      - "9092:9092"
+    environment:
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    healthcheck:
+      test: [ "CMD", "kafka-topics.sh", "--list", "--bootstrap-server", "localhost:9092" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
   backend:
     build:
-      context: .
+      context: ./app
       dockerfile: Dockerfile
     container_name: backend-twoWaySync
     ports:
@@ -27,7 +53,17 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
 
+  outward-worker:
+    build:
+      context: ./outward
+      dockerfile: Dockerfile
+    container_name: worker-twoWaySync
+    depends_on:
+      kafka:
+        condition: service_healthy
 
 volumes:
   postgres-data:

@@ -1,11 +1,15 @@
 # Test your FastAPI endpoints
 
-GET http://127.0.0.1:8000/
+GET http://127.0.0.1:80/
 Accept: application/json
 
 ###
 
-GET http://127.0.0.1:8000/hello/User
-Accept: application/json
+POST http://127.0.0.1:80/customers/
+Content-Type: application/json
 
+{
+  "name": "xyz",
+  "email": "xyz@mail.com"
+}
 ###

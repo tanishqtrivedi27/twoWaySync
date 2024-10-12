@@ -1,11 +1,9 @@
--- noinspection SqlNoDataSourceInspectionForFile
+CREATE DATABASE mydb;
 
-CREATE DATABASE zenskar;
-
-\c zenskar
+\c mydb
 
 CREATE TABLE IF NOT EXISTS customers (
         id SERIAL PRIMARY KEY,
-        username INT NOT NULL,
-        password VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL
     );
