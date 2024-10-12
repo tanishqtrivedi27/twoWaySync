@@ -26,23 +26,6 @@ logger = logging.getLogger(__name__)
 
 stripe.api_key = "sk_test_51Q8qNR03SnHpXEcqOqdTZpCnl1us65bFQ4EIwfY5xUXrnB5Oj73WVWWV6ujTd3IwZTIowOFs76olCp95AS3yTKD40022hVRFEc"
 
-# producer = KafkaProducer(
-#     bootstrap_servers=['kafka:9092'],
-#     value_serializer=lambda v: json.dumps(v).encode('utf-8')
-# )
-
-# Kafka topic for customer updates
-# KAFKA_TOPIC = "stripe_updates"
-
-# def send_to_kafka(topic, data):
-    # try:
-    #     future = producer.send(topic, data)
-    #     record_metadata = future.get(timeout=10)
-    #     logger.info(
-    #         f"Sent message to Kafka topic {topic}, partition {record_metadata.partition}, offset {record_metadata.offset}")
-    # except KafkaError as e:
-    #     logger.error(f"Failed to send message to Kafka: {str(e)}")
-
 def fetch_stripe_updates():
     session = Session()
     try:
@@ -59,12 +42,6 @@ def fetch_stripe_updates():
                 logger.info(f"Skipping customer {stripe_customer.id}: email and name combination already exists")
                 continue
 
-            # customer_data = {
-            #     'id': stripe_customer.id,
-            #     'email': stripe_customer.email,
-            #     'name': stripe_customer.name,
-            # }
-            # send_to_kafka(KAFKA_TOPIC, customer_data)
             logger.info(f"Processed new customer: {stripe_customer.id}")
 
             new_customer = Customer(name=stripe_customer.name, email=stripe_customer.email)
